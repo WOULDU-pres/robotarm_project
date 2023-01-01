@@ -1,28 +1,3 @@
-# YOLOv5 🚀 by Ultralytics, GPL-3.0 license
-"""
-Run inference on images, videos, directories, streams, etc.
-
-Usage - sources:
-    $ python path/to/detect.py --weights yolov5s.pt --source 0              # webcam
-                                                             img.jpg        # image
-                                                             vid.mp4        # video
-                                                             path/          # directory
-                                                             path/*.jpg     # glob
-                                                             'https://youtu.be/Zgi9g1ksQHc'  # YouTube
-                                                             'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
-
-Usage - formats:
-    $ python path/to/detect.py --weights yolov5s.pt                 # PyTorch
-                                         yolov5s.torchscript        # TorchScript
-                                         yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                                         yolov5s.xml                # OpenVINO
-                                         yolov5s.engine             # TensorRT
-                                         yolov5s.mlmodel            # CoreML (MacOS-only)
-                                         yolov5s_saved_model        # TensorFlow SavedModel
-                                         yolov5s.pb                 # TensorFlow GraphDef
-                                         yolov5s.tflite             # TensorFlow Lite
-                                         yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-"""
 import subprocess
 import argparse
 import os
@@ -79,8 +54,6 @@ def arm_move_up():
     Arm.Arm_serial_servo_write(3, 90, 1500)
     Arm.Arm_serial_servo_write(4, 90, 1500)
     time.sleep(.1)
-    
-
 
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -191,14 +164,11 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
             imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
 
-
             target_servox=90
             target_servoy=45
             Arm = Arm_Lib.Arm_Device()
             xservo_pid = PID.PositionalPID(1.9, 0.3, 0.35)
             yservo_pid = PID.PositionalPID(1.9, 0.3, 0.35)
-
-
 
             if len(det):
                 # Rescale boxes from img_size to im0 size
@@ -229,12 +199,6 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         annotator.box_label(xyxy, label, color=colors(c, True))
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
-                
-                            
-                            
-                
-                
-                
                
                 xservo_pid.SystemOutput = round((c1[0]+c2[0])/2)
                 xservo_pid.SetStepSignal(320)
@@ -245,111 +209,32 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         xservo_pid.SetInertiaTime(0.01, 0.1)
                         target_valuex = int(1500 + xservo_pid.SystemOutput)
                         target_servox = int((target_valuex - 500) / 10)
-                        
-                        
-                        # if round((c1[0]+c2[0])/2):
-                        #     p_target = [target_servox, 80, target_servoy, target_servoy, 90] # target servo angle set plz
-                        #     p_save1 = [188,28,68,37,270]
-                        #     p_save2 = [191,60,30,20,270]
-                        #     p_save3 = [194,90,0,10,270]
-                        #     p_save4 = [172,28,68,37,270]
-                        #     p_save5 = [171,60,30,20,270]
-                        #     p_save6 = [169,90,0,10,270]
-                        #     p_save7 = [183,50,37,41,270]
-                        #     p_save8 = [180,80,18,10,270]
-                        #     p_top = [90,80,50,50,270]
-                        #     p_harvest = [target_servox, 135, 30, 10, 90]
-                        #     p_twist = [45, 90, 20, 25, 45]
-                        #     for i in range(8):
-                        #         if  i ==0:
-                        #             arm_clamp_block(0)
-                        #             arm_move(p_target, 1000)
-                        #             arm_clamp_block(1)
-                                
-                        #             arm_move(p_top, 1000)
-                        #             arm_move(p_save1, 1000)
-                        #             arm_clamp_block(0)
-                                        
-                        #             Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                        #             time.sleep(1)
-                                # elif i ==1:
-                                #     arm_clamp_block(0)
-                                #     arm_move(p_target, 1000)
-                                #     arm_clamp_block(1)
-                                
-                                #     arm_move(p_top, 1000)
-                                #     arm_move(p_save2, 1000)
-                                #     arm_clamp_block(0)
-                                        
-                                #     Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                                #     time.sleep(1)                                
-                                # elif i ==2:
-                                #     arm_clamp_block(0)
-                                #     arm_move(p_target, 1000)
-                                #     arm_clamp_block(1)
-                                
-                                #     arm_move(p_top, 1000)
-                                #     arm_move(p_save3, 1000)
-                                #     arm_clamp_block(0)
-                                        
-                                #     Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                                #     time.sleep(1)
-                                # elif i ==3:
-                                #     arm_clamp_block(0)
-                                #     arm_move(p_target, 1000)
-                                #     arm_clamp_block(1)
-                                
-                                #     arm_move(p_top, 1000)
-                                #     arm_move(p_save4, 1000)
-                                #     arm_clamp_block(0)
-                                        
-                                #     Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                                #     time.sleep(1)
-                                # elif i ==4:
-                                #     arm_clamp_block(0)
-                                #     arm_move(p_target, 1000)
-                                #     arm_clamp_block(1)
-                                
-                                #     arm_move(p_top, 1000)
-                                #     arm_move(p_save5, 1000)
-                                #     arm_clamp_block(0)
-                                        
-                                #     Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                                #     time.sleep(1)
-                                # elif i ==5:
-                                #     arm_clamp_block(0)
-                                #     arm_move(p_target, 1000)
-                                #     arm_clamp_block(1)
-                                
-                                #     arm_move(p_top, 1000)
-                                #     arm_move(p_save6, 1000)
-                                #     arm_clamp_block(0)
-                                        
-                                #     Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                                #     time.sleep(1)
-                                # elif i ==6:
-                                #     arm_clamp_block(0)
-                                #     arm_move(p_target, 1000)
-                                #     arm_clamp_block(1)
-                                
-                                #     arm_move(p_top, 1000)
-                                #     arm_move(p_save7, 1000)
-                                #     arm_clamp_block(0)
-                                        
-                                #     Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                                #     time.sleep(1)
-                                # else:
-                                #     arm_clamp_block(0)
-                                #     arm_move(p_target, 1000)
-                                #     arm_clamp_block(1)
-                                
-                                #     arm_move(p_top, 1000)
-                                #     arm_move(p_save8, 1000)
-                                #     arm_clamp_block(0)
-                                        
-                                #     Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-                                #     time.sleep(1)
 
+                        if round((c1[0]+c2[0])/2):
+                            p_target = [target_servox, 80, target_servoy, target_servoy, 90] # target servo angle set plz
+                            p_save1 = [188,28,68,37,270]
+                            p_save2 = [191,60,30,20,270]
+                            p_save3 = [194,90,0,10,270]
+                            p_save4 = [172,28,68,37,270]
+                            p_save5 = [171,60,30,20,270]
+                            p_save6 = [169,90,0,10,270]
+                            p_save7 = [183,50,37,41,270]
+                            p_save8 = [180,80,18,10,270]
+                            p_top = [90,80,50,50,270]
+                            p_harvest = [target_servox, 135, 30, 10, 90]
+                            p_twist = [45, 90, 20, 25, 45]
+                            for i in range(8):
+                                if  i ==0:
+                                    arm_clamp_block(0)
+                                    arm_move(p_target, 1000)
+                                    arm_clamp_block(1)
+                                
+                                    arm_move(p_top, 1000)
+                                    arm_move(p_save1, 1000)
+                                    arm_clamp_block(0)
+                                        
+                                    Arm.Arm_serial_servo_write6_array(joints_0, 1000)
+                                    time.sleep(1)
 
                         if target_servox > 180:target_servox = 180
                         if target_servox < 0: target_servox = 0
@@ -367,9 +252,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         if target_servoy < 0: target_servoy = 0
                 joints_0 = [target_servox, 135, target_servoy / 2, target_servoy / 2, 90, 30]
                 Arm.Arm_serial_servo_write6_array(joints_0, 1000)
-        
-                
-               
+
             # Print time (inference-only)
             LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
 
@@ -397,7 +280,6 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                             save_path += '.mp4'
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer[i].write(im0)
-
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
