@@ -184,6 +184,11 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                     #좌표값
                     c1, c2 = (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))
                     center_point = round((c1[0]+c2[0])/2), round((c1[1]+c2[1])/2)
+                    
+                    ### 딸기 중앙에 포인트 생성, 생성 좌표값은
+                    ### round((c1[0]+c2[0])/2), round((c1[1]+c2[1])/2)
+
+                    
                     circle = cv2.circle(im0,center_point,5,(0,255,0),2)
                     text_coord = cv2.putText(im0,str(center_point),center_point,cv2.FONT_HERSHEY_PLAIN,2,(0,0,255))
                     
@@ -200,15 +205,50 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
                
+                ### 트래킹
                 xservo_pid.SystemOutput = round((c1[0]+c2[0])/2)
                 xservo_pid.SetStepSignal(320)
                 xservo_pid.SetInertiaTime(0.01, 0.1)
+
+                ### 타겟을 잡는 서보모터의 x, y의 좌표값이 앞에서 객체 정중앙에 포인트를 찍었던 위치
+                ### round((c1[0]+c2[0])/2), round((c1[1]+c2[1])/2)
+                ### 위의 좌표와 일치하지 않는다면,
+                ### x좌표의 pid제어를 통한 위치의 값을 round((c1[0]+c2[0])/2)로 설정한다.
+
+
                 if not (target_servox>=180 and round((c1[0]+c2[0])/2)<=320 or target_servox<=0 and round((c1[0]+c2[0])/2)>=320):
                         xservo_pid.SystemOutput = round((c1[0]+c2[0])/2)
                         xservo_pid.SetStepSignal(320)
+
+                        ### 여기서 뜬금없는 SetStepSignal() 뭔지 몰라서 pid 라이브러리 찾아감.
+                        ### 아래는 pid의 라이브러리 안의 SetStepSignal()함수
+
+                        ### 함수 해석
+                        ### def SetStepSignal(self, StepSignal): # pid라이브러리의 SetStepSignal()함수
+                        ###     Err = StepSignal - self.SystemOutput 
+                        ###     위에서 SetStepSignal()함수에서 인자로 넣은 320의 데이터를
+                        ###     앞에서 출력한 서보모터의 x 좌표 round((c1[0]+c2[0])/2)를
+                        ###     뺄셈함으로써 위치의 오차를 계산하고
+                        ###     아래에서 pid의 비례,적분,미분의 순서를 거쳐
+                        ### 
+                        ###     KpWork = self.Kp * Err
+                        ###     KiWork = self.Ki * self.PIDErrADD
+                        ###     KdWork = self.Kd * (Err - self.ErrBack)
+                        ###
+                        ###     최저 오차값을 계산하여 서보모터의 x좌표를 다시 수립한다.
+                        ###
+                        ###     self.PidOutput = KpWork + KiWork + KdWork
+                        ###     self.PIDErrADD += Err
+                        ###     self.ErrBack = Err
+
+
+
                         xservo_pid.SetInertiaTime(0.01, 0.1)
                         target_valuex = int(1500 + xservo_pid.SystemOutput)
                         target_servox = int((target_valuex - 500) / 10)
+
+
+                        ### 잡는 동작(실제 보고 잡는 건 아니고 모의 동작)
 
                         if round((c1[0]+c2[0])/2):
                             p_target = [target_servox, 80, target_servoy, target_servoy, 90] # target servo angle set plz
